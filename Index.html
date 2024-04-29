@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-part Form</title>
+<style>
+    /* Basic styling for form elements */
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+    }
+    form {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    textarea,
+    input[type="file"] {
+        width: calc(100% - 22px);
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+    input[type="file"] {
+        margin-bottom: 20px;
+    }
+    .image-preview img {
+        max-width: 100%;
+        display: block;
+        margin-bottom: 10px;
+        border-radius: 5px;
+    }
+    .image-description {
+        width: calc(100% - 22px);
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+    button {
+        padding: 10px 20px;
+        background-color: #4caf50;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    button:hover {
+        background-color: #45a049;
+    }
+    #part-2 {
+        display: none;
+    }
+</style>
+</head>
+<body>
+
+<!-- Part 1: Form for user input -->
+<form id="form-part-1" enctype="multipart/form-data">
+    <h2>Enter Your Information</h2>
+    <input type="text" name="name" placeholder="Name" required>
+    <input type="text" name="organization" placeholder="Organization" required>
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="tel" name="phone" placeholder="Phone" required>
+    <input type="text" name="project" placeholder="Project" required>
+    <textarea name="note" placeholder="Note"></textarea>
+    <input type="file" name="images[]" accept="image/*" multiple required>
+    <button type="button" onclick="showImages()">Next</button>
+</form>
+
+<!-- Part 2: Show images and allow image descriptions -->
+<div id="part-2">
+    <h2>Upload Image Descriptions</h2>
+    <form id="imageDescriptionsForm">
+        <div id="imageContainer"></div>
+        <button type="button" onclick="submitForm()">Submit</button>
+    </form>
+</div>
+
+<script>
+    // Function to show uploaded images and move to part 2
+    function showImages() {
+        const form = document.getElementById('form-part-1');
+        const images = form.elements['images[]'].files;
+        const imageContainer = document.getElementById('imageContainer');
+
+        // Show uploaded images
+        for (let i = 0; i < images.length; i++) {
+            const image = images[i];
+            const imagePreview = document.createElement('div');
+            imagePreview.className = 'image-preview';
+
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(image);
+            imagePreview.appendChild(img);
+
+            const descriptionInput = document.createElement('input');
+            descriptionInput.type = 'text';
+            descriptionInput.name = 'imageDescription';
+            descriptionInput.placeholder = 'Image Description';
+            descriptionInput.className = 'image-description';
+            imagePreview.appendChild(descriptionInput);
+
+            imageContainer.appendChild(imagePreview);
+        }
+
+        // Show part 2
+        document.getElementById('part-2').style.display = 'block';
+    }
+
+    // Function to submit the form to Zapier
+    function submitForm() {
+        const formPart1 = document.getElementById('form-part-1');
+
+        // Prepare form data
+        const formData = new FormData(formPart1);
+
+        // Send form data to Zapier
+        fetch('https://hooks.zapier.com/hooks/catch/6177577/37m59hj/', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Form submitted successfully!');
+            } else {
+                throw new Error('Failed to submit form');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while submitting the form');
+        });
+    }
+</script>
+
+</body>
+</html>
